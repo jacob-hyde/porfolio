@@ -12,6 +12,17 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Create env file
+        run: |
+          echo "MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }}" >> .env.prod
+          echo "MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }}" >> .env.prod
+          echo "MYSQL_USER=${{ secrets.MYSQL_USER }}" >> .env.prod
+          echo "MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}" >> .env.prod
+          echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env.prod
+          echo "JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}" >> .env.prod
+          echo "NODE_ENV=production" >> .env.prod
+          echo "REACT_APP_API_URL=https://jacobhyde.com/api" >> .env.prod
+
       - name: Deploy to Linode
         uses: appleboy/ssh-action@master
         with:
