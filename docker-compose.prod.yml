@@ -73,6 +73,7 @@ services:
       - ./nginx/conf.d:/etc/nginx/conf.d
       - ./nginx/ssl:/etc/nginx/ssl
       - ./frontend/build:/usr/share/nginx/html
+      - nginx_logs:/var/log/nginx
     depends_on:
       - frontend
       - backend
@@ -87,4 +88,7 @@ networks:
 volumes:
   jacobhyde_db_data:
     name: jacobhyde_db_data
+    driver: local
+  nginx_logs:
+    name: nginx_logs
     driver: local
