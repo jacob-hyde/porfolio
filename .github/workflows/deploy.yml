@@ -21,31 +21,41 @@ jobs:
             cd /var/www/jacobhyde.com
             
             # Create production env file
-            cat > .env.prod << EOF
-            # Database Configuration
-            MYSQL_ROOT_PASSWORD='${{ secrets.MYSQL_ROOT_PASSWORD }}'
-            MYSQL_DATABASE='jacobhyde_db'
-            MYSQL_USER='jacobhyde_user'
-            MYSQL_PASSWORD='${{ secrets.MYSQL_PASSWORD }}'
-
-            # Flask Configuration
+            echo "Creating .env.prod file..."
+            cat > .env.prod << 'EOL'
+            MYSQL_ROOT_PASSWORD="${{ secrets.MYSQL_ROOT_PASSWORD }}"
+            MYSQL_DATABASE=jacobhyde_db
+            MYSQL_USER=jacobhyde_user
+            MYSQL_PASSWORD="${{ secrets.MYSQL_PASSWORD }}"
             FLASK_ENV=production
-            SECRET_KEY='${{ secrets.SECRET_KEY }}'
-            JWT_SECRET_KEY='${{ secrets.JWT_SECRET_KEY }}'
-
-            # Frontend Configuration
+            SECRET_KEY="${{ secrets.SECRET_KEY }}"
+            JWT_SECRET_KEY="${{ secrets.JWT_SECRET_KEY }}"
             NODE_ENV=production
-            REACT_APP_API_URL='https://jacobhyde.com/api'
-            EOF
+            REACT_APP_API_URL=https://jacobhyde.com/api
+            EOL
             
             # Set proper permissions
             chmod 600 .env.prod
             
-            # Pull latest changes and restart
-            git pull
-            docker compose -f docker-compose.prod.yml down
-            docker compose -f docker-compose.prod.yml up -d --build
+            echo "Verifying .env.prod contents (without showing secrets)..."
+            grep -v "PASSWORD\|KEY" .env.prod
             
-            # Wait for containers to start and check status
-            sleep 10
+            # Pull latest changes and restart
+            echo "Pulling latest changes..."
+            git pull
+            
+            echo "Stopping containers..."
+            docker compose -f docker-compose.prod.yml down
+            
+            echo "Starting containers..."
+            docker compose -f docker-compose.prod.yml up -d
+            
+            # Wait for containers to initialize
+            echo "Waiting for containers to initialize..."
+            sleep 15
+            
+            echo "Checking container logs..."
+            docker compose -f docker-compose.prod.yml logs db
+            
+            echo "Checking container status..."
             docker compose -f docker-compose.prod.yml ps

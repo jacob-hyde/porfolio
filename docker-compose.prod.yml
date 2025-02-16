@@ -14,10 +14,11 @@ services:
     networks:
       - jacobhyde_net
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      test: mysqladmin ping -h localhost || exit 1
+      interval: 30s
+      timeout: 20s
+      retries: 10
+      start_period: 80s
 
   backend:
     build:
