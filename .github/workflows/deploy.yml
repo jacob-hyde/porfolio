@@ -20,41 +20,26 @@ jobs:
           script: |
             cd /var/www/jacobhyde.com
             
-            # Create production env file
-            echo "Creating .env.prod file..."
-            cat > .env.prod << 'EOL'
-            MYSQL_ROOT_PASSWORD="${{ secrets.MYSQL_ROOT_PASSWORD }}"
-            MYSQL_DATABASE=jacobhyde_db
-            MYSQL_USER=jacobhyde_user
-            MYSQL_PASSWORD="${{ secrets.MYSQL_PASSWORD }}"
-            FLASK_ENV=production
-            SECRET_KEY="${{ secrets.SECRET_KEY }}"
-            JWT_SECRET_KEY="${{ secrets.JWT_SECRET_KEY }}"
-            NODE_ENV=production
-            REACT_APP_API_URL=https://jacobhyde.com/api
-            EOL
+            echo "Checking .env.prod file..."
+            if [ ! -f .env.prod ]; then
+              echo "Error: .env.prod file not found!"
+              exit 1
+            fi
             
-            # Set proper permissions
-            chmod 600 .env.prod
-            
-            echo "Verifying .env.prod contents (without showing secrets)..."
+            echo "Verifying environment variables (without showing secrets)..."
             grep -v "PASSWORD\|KEY" .env.prod
-            
-            # Pull latest changes and restart
-            echo "Pulling latest changes..."
-            git pull
             
             echo "Stopping containers..."
             docker compose -f docker-compose.prod.yml down
             
-            echo "Starting containers..."
-            docker compose -f docker-compose.prod.yml up -d
+            echo "Starting containers with environment file..."
+            docker compose --env-file .env.prod -f docker-compose.prod.yml up -d
             
             # Wait for containers to initialize
             echo "Waiting for containers to initialize..."
             sleep 15
             
-            echo "Checking container logs..."
+            echo "Checking MySQL logs..."
             docker compose -f docker-compose.prod.yml logs db
             
             echo "Checking container status..."
