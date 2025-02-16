@@ -9,9 +9,33 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-      - name: Deploy to Linode
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Build React app
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build
+
+      - name: Copy build files to server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.LINODE_HOST }}
+          username: ${{ secrets.LINODE_USERNAME }}
+          key: ${{ secrets.LINODE_SSH_KEY }}
+          source: "frontend/build/*"
+          target: "/var/www/jacobhyde.com/frontend/build"
+          strip_components: 2
+
+      - name: Deploy to Server
         uses: appleboy/ssh-action@master
         env:
           MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
@@ -45,12 +69,6 @@ jobs:
             EOL
             
             chmod 600 .env.prod
-            
-            echo "Building React app..."
-            cd frontend
-            npm ci
-            npm run build
-            cd ..
             
             echo "Building and starting containers..."
             docker compose -f docker-compose.prod.yml down
