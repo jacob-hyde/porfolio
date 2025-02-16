@@ -64,7 +64,9 @@ services:
       - backend
 
   nginx:
-    image: nginx:alpine
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
     restart: always
     ports:
       - "80:80"
