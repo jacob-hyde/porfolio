@@ -4,24 +4,12 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-
-      - name: Create env file
-        run: |
-          echo "MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }}" >> .env.prod
-          echo "MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }}" >> .env.prod
-          echo "MYSQL_USER=${{ secrets.MYSQL_USER }}" >> .env.prod
-          echo "MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}" >> .env.prod
-          echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env.prod
-          echo "JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}" >> .env.prod
-          echo "NODE_ENV=production" >> .env.prod
-          echo "REACT_APP_API_URL=https://jacobhyde.com/api" >> .env.prod
 
       - name: Deploy to Linode
         uses: appleboy/ssh-action@master
@@ -31,6 +19,33 @@ jobs:
           key: ${{ secrets.LINODE_SSH_KEY }}
           script: |
             cd /var/www/jacobhyde.com
+            
+            # Create production env file
+            cat > .env.prod << EOF
+            # Database Configuration
+            MYSQL_ROOT_PASSWORD='${{ secrets.MYSQL_ROOT_PASSWORD }}'
+            MYSQL_DATABASE='jacobhyde_db'
+            MYSQL_USER='jacobhyde_user'
+            MYSQL_PASSWORD='${{ secrets.MYSQL_PASSWORD }}'
+
+            # Flask Configuration
+            FLASK_ENV=production
+            SECRET_KEY='${{ secrets.SECRET_KEY }}'
+            JWT_SECRET_KEY='${{ secrets.JWT_SECRET_KEY }}'
+
+            # Frontend Configuration
+            NODE_ENV=production
+            REACT_APP_API_URL='https://jacobhyde.com/api'
+            EOF
+            
+            # Set proper permissions
+            chmod 600 .env.prod
+            
+            # Pull latest changes and restart
             git pull
             docker compose -f docker-compose.prod.yml down
             docker compose -f docker-compose.prod.yml up -d --build
+            
+            # Wait for containers to start and check status
+            sleep 10
+            docker compose -f docker-compose.prod.yml ps
