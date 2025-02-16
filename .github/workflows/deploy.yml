@@ -33,9 +33,9 @@ jobs:
           host: ${{ secrets.LINODE_HOST }}
           username: ${{ secrets.LINODE_USERNAME }}
           key: ${{ secrets.LINODE_SSH_KEY }}
-          source: "frontend/build/*"
-          target: "/var/www/jacobhyde.com/frontend/build"
-          strip_components: 2
+          source: "frontend/build/,frontend/Dockerfile.prod,frontend/nginx.conf"
+          target: "/var/www/jacobhyde.com/frontend"
+          strip_components: 1
 
       - name: Deploy to Server
         uses: appleboy/ssh-action@master
