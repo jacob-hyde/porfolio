@@ -53,32 +53,32 @@ api.interceptors.response.use(
 
 export const authApi = {
   login: async (username: string, password: string) => {
-    const response = await api.post('/api/login', { username, password });
+    const response = await api.post('/login', { username, password });
     if (response.data.token) {
       localStorage.setItem('token', response.data.token);
     }
     return response.data;
   },
-  checkAuth: async () => api.get('/api/check-auth'),
+  checkAuth: async () => api.get('/check-auth'),
   logout: () => {
     localStorage.removeItem('token');
   },
 };
 
 export const projectsApi = {
-  list: () => api.get('/api/projects'),
-  create: (project: Omit<Project, 'id'>) => api.post('/api/projects', project),
-  delete: (id: number) => api.delete(`/api/projects/${id}`),
+  list: () => api.get('/projects'),
+  create: (project: Omit<Project, 'id'>) => api.post('/projects', project),
+  delete: (id: number) => api.delete(`/projects/${id}`),
 };
 
 export const skillsApi = {
-  list: () => api.get('/api/skills'),
-  create: (skill: Omit<Skill, 'id'>) => api.post('/api/skills', skill),
-  delete: (id: number) => api.delete(`/api/skills/${id}`),
+  list: () => api.get('/skills'),
+  create: (skill: Omit<Skill, 'id'>) => api.post('/skills', skill),
+  delete: (id: number) => api.delete(`/skills/${id}`),
 };
 
 export const profileApi = {
-  get: () => api.get('/api/profile'),
+  get: () => api.get('/profile'),
 };
 
 export default api;
