@@ -46,27 +46,12 @@ services:
     networks:
       - jacobhyde_net
 
-  frontend:
+  nginx:
     build:
       context: ./frontend
       dockerfile: Dockerfile.prod
       args:
         - REACT_APP_API_URL=https://jacobhyde.com/api
-    restart: always
-    env_file:
-      - .env.prod
-    environment:
-      - NODE_ENV=production
-      - REACT_APP_API_URL=https://jacobhyde.com/api
-    networks:
-      - jacobhyde_net
-    depends_on:
-      - backend
-
-  nginx:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile.prod
     restart: always
     ports:
       - "80:80"
@@ -75,7 +60,6 @@ services:
       - ./nginx/ssl:/etc/nginx/ssl
       - nginx_logs:/var/log/nginx
     depends_on:
-      - frontend
       - backend
     networks:
       - jacobhyde_net
