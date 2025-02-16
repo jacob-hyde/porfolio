@@ -2,77 +2,40 @@ services:
   db:
     image: mysql:8.0
     restart: always
-    env_file:
-      - .env.prod
-    environment:
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-      - MYSQL_DATABASE=${MYSQL_DATABASE}
-      - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+    env_file: .env.prod
     volumes:
-      - jacobhyde_db_data:/var/lib/mysql
-      - ./mysql/backups:/backups
-      - ./mysql/init:/docker-entrypoint-initdb.d
+      - db_data:/var/lib/mysql
     networks:
-      - jacobhyde_net
-    healthcheck:
-      test: mysqladmin ping -h localhost || exit 1
-      interval: 30s
-      timeout: 20s
-      retries: 10
-      start_period: 80s
+      - app_net
 
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile.prod
     restart: always
-    env_file:
-      - .env.prod
-    environment:
-      - MYSQL_HOST=db
-      - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-      - MYSQL_DATABASE=${MYSQL_DATABASE}
-      - FLASK_APP=main.py
-      - FLASK_ENV=production
-      - SECRET_KEY=${SECRET_KEY}
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
-    expose:
-      - "5000"
+    env_file: .env.prod
     depends_on:
-      db:
-        condition: service_healthy
+      - db
     networks:
-      - jacobhyde_net
+      - app_net
 
   nginx:
     build:
       context: ./frontend
       dockerfile: Dockerfile.prod
-      args:
-        - REACT_APP_API_URL=https://jacobhyde.com/api
     restart: always
     ports:
       - "80:80"
       - "443:443"
     volumes:
       - ./nginx/ssl:/etc/nginx/ssl
-      - nginx_logs:/var/log/nginx
     depends_on:
       - backend
     networks:
-      - jacobhyde_net
+      - app_net
 
 networks:
-  jacobhyde_net:
-    name: jacobhyde_net
-    driver: bridge
+  app_net:
 
 volumes:
-  jacobhyde_db_data:
-    name: jacobhyde_db_data
-    driver: local
-  nginx_logs:
-    name: nginx_logs
-    driver: local
+  db_data:
