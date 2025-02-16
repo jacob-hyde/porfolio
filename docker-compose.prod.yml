@@ -10,9 +10,16 @@ services:
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     volumes:
-      - db_data:/var/lib/mysql
+      - jacobhyde_db_data:/var/lib/mysql
+      - ./mysql/backups:/backups
+      - ./mysql/init:/docker-entrypoint-initdb.d
     networks:
-      - portfolio_net
+      - jacobhyde_net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   backend:
     build:
@@ -28,18 +35,26 @@ services:
       - FLASK_ENV=production
       - SECRET_KEY=${SECRET_KEY}
       - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+    expose:
+      - "5000"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     networks:
-      - portfolio_net
+      - jacobhyde_net
 
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile.prod
+      args:
+        - REACT_APP_API_URL=https://jacobhyde.com/api
     restart: always
+    environment:
+      - NODE_ENV=production
+      - REACT_APP_API_URL=https://jacobhyde.com/api
     networks:
-      - portfolio_net
+      - jacobhyde_net
     depends_on:
       - backend
 
@@ -52,17 +67,17 @@ services:
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d
       - ./nginx/ssl:/etc/nginx/ssl
-      - ./nginx/www:/var/www/html
+      - ./frontend/build:/usr/share/nginx/html
     depends_on:
       - frontend
       - backend
     networks:
-      - portfolio_net
+      - jacobhyde_net
 
 networks:
-  portfolio_net:
+  jacobhyde_net:
     driver: bridge
 
 volumes:
-  db_data:
+  jacobhyde_db_data:
     driver: local
