@@ -25,7 +25,7 @@ const Portfolio: React.FC = () => {
 
   useEffect(() => {
     loadData();
-  }, [dispatch]);
+  }, [dispatch, loadData]);
 
   const loadData = async () => {
     try {

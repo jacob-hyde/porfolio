@@ -2,14 +2,6 @@ import axios from 'axios';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8092';
 
-interface LoginResponse {
-  message: string;
-  token: string;
-  user: {
-    username: string;
-  };
-}
-
 interface Project {
   id: number;
   title: string;
@@ -27,6 +19,11 @@ interface Skill {
   category: string;
   proficiency: number;
   created_at?: string;
+}
+
+interface LoginRequest {
+  username: string;
+  password: string;
 }
 
 const api = axios.create({

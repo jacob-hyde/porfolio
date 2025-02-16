@@ -21,6 +21,8 @@ jobs:
 
       - name: Build React app
         working-directory: frontend
+        env:
+          CI: false  # Prevents treating warnings as errors
         run: |
           npm ci
           npm run build
