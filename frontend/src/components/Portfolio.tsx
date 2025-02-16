@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import {
   Container,
   Typography,
@@ -23,11 +23,7 @@ const Portfolio: React.FC = () => {
   const dispatch = useAppDispatch();
   const { profile, projects, skills, loading } = useAppSelector((state) => state.portfolio);
 
-  useEffect(() => {
-    loadData();
-  }, [dispatch, loadData]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       await Promise.all([
         dispatch(fetchProfile()),
@@ -37,7 +33,11 @@ const Portfolio: React.FC = () => {
     } catch (error) {
       console.error('Error loading data:', error);
     }
-  };
+  }, [dispatch]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData, dispatch]);
 
   if (loading) {
     return (
