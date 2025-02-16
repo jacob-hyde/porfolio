@@ -19,7 +19,7 @@ jobs:
           username: ${{ secrets.LINODE_USERNAME }}
           key: ${{ secrets.LINODE_SSH_KEY }}
           script: |
-            cd personal-website
+            cd /var/www/jacobhyde.com
             git pull
             docker compose -f docker-compose.prod.yml down
             docker compose -f docker-compose.prod.yml up -d --build
