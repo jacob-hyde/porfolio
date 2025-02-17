@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y \
 
 # Install Python dependencies
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt gunicorn eventlet
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application
 COPY . .
@@ -25,5 +25,5 @@ ENV PYTHONDONTWRITEBYTECODE=1
 RUN useradd -m appuser && chown -R appuser:appuser /app
 USER appuser
 
-# Run gunicorn with eventlet worker
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "4", "--worker-class", "eventlet", "--timeout", "120", "main:app"]
+# Run with production server
+CMD ["python", "-m", "flask", "run", "--host=0.0.0.0", "--port=5000"]
